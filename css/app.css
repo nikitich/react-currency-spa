@@ -1,0 +1,43 @@
+/*div {
+    border: 1px solid;
+}*/
+
+.example {
+    margin: 20px;
+}
+
+.container {
+    background-color: whitesmoke;
+}
+
+#header {
+    background-color: #285e8e;
+    height: 100px;
+    padding: 10px;
+    color: #ffffff;
+
+}
+
+#sidebar {
+    background-color: #31b0d5;
+}
+
+#content_container {
+    background-color: #e7e7e7;
+}
+
+.info-left {
+    padding-right: 5px;
+}
+
+.info-right {
+    padding-left: 1px;
+}
+
+#trigger_form {
+    border: solid 1px;
+}
+
+.input_field {
+    width: 170px;
+}
