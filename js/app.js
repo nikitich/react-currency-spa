@@ -118,6 +118,7 @@ var formFields =
         name: "currency",
         label: "Currency",
         type: "select",
+        step: "",
         value: [
             {
                 val: "USD",
@@ -132,6 +133,7 @@ var formFields =
         name: "operation",
         label: "Operation",
         type: "select",
+        step: "",
         value: [
             {
                 val: "buy",
@@ -146,6 +148,7 @@ var formFields =
         name: "condition",
         label: "Condition",
         type: "select",
+        step: "",
         value: [
             {
                 val: "more",
@@ -160,19 +163,24 @@ var formFields =
         name: "rate",
         label: "Rate",
         type: "number",
+        step: "0.01",
         value: 0.00
     }, {
         name: "email",
         label: "Email",
         type: "email",
+        step: "",
         value: ""
     }]
 ;
 
+
+var infoHideTimeout = 2000;
+
 var FormField = React.createClass({
     getInitialState: function() {
         return {
-            inputElement: <input name={this.props.name} type={this.props.type} className="input_field"/>
+            inputElement: <input name={this.props.name} type={this.props.type} className="input_field" required/>
         }
     },
     render: function () {
@@ -181,19 +189,19 @@ var FormField = React.createClass({
         {
 
             this.state.inputElement = (
-                    <select name="{this.props.name}" className="input_field">
+                    <select name={this.props.name} className="input_field">
                         {this.props.value.map(function(field){
                             return (
-                            <option value="{field.val}">{field.text}</option>
+                            <option value={field.val}>{field.text}</option>
                             )
                         })}
                     </select>
                 )
 
         }
-        else
+        else if (this.props.type == "number")
         {
-            //console.log("input");
+            this.state.inputElement = <input name={this.props.name} type={this.props.type} step={this.props.step} className="input_field" required/>
 
         }
 
@@ -206,7 +214,6 @@ var FormField = React.createClass({
                         </div>
                         <div className="col-md-8  col-sm-8  col-xs-8">
                             {this.state.inputElement}
-                            
                         </div>
                     </div>
                 </div>
@@ -216,9 +223,39 @@ var FormField = React.createClass({
 });
 
 var TriggerComponent = React.createClass({
+    handleSubmit: function (e) {
+        e.preventDefault();
+        var formData=$(this.refs.trigger_form.getDOMNode()).find(".input_field").serializeArray();
+
+        $.ajax({
+            url: "bin/app.php",
+            type: "POST",
+            dataType: 'json',
+            data: {
+                action: "set_trigger",
+                data: formData
+            },
+            success: function(response) {
+                //console.log(response);
+                if (response.status == 0)
+                {
+                    //console.log(response.errors);
+                    alert(response.errors);
+                }
+                if (response.status == 1)
+                {
+                    alert("Triger submitted succesfuly");
+                }
+            }.bind(this),
+            error: function(xhr, status, err) {
+                console.error(this.props.url, status, err.toString());
+            }.bind(this)
+        });
+    },
     getInitialState: function () {
         return {
-            fields: formFields
+            fields: formFields,
+            infoDiv: false
         }
     },
     render: function () {
@@ -227,25 +264,28 @@ var TriggerComponent = React.createClass({
                 <div className="row">
                     <div className="col-md-4 col-sm-3 hidden-xs">
                     </div>
-                    <div className="col-md-4 col-sm-6 col-xs-12 well-lg text-center" id="trigger_form">
-                        <h2>Submit triger for notice</h2>
-                        <form role="form">
-                            {this.state.fields.map(function(field){
-                                return (
-                                    <FormField
-                                        name={field.name}
-                                        label={field.label}
-                                        type={field.type}
-                                        value={field.value}
-                                    />
-                                )
-                            })}
-                            <div className="form-group">
-                                <div className="col-md-12 col-sx-12">
-                                    <input name="set_trigger" type="submit" className="btn btn-default"  value="Submit"/>
+                    <div className="col-md-4 col-sm-6 col-xs-12 well-lg text-center" id="trigger_form_div">
+                        <div className="row">
+                            <h2>Submit trigger for notice</h2>
+                            <form role="form" onSubmit={this.handleSubmit} ref="trigger_form">
+                                {this.state.fields.map(function(field){
+                                    return (
+                                        <FormField
+                                            name={field.name}
+                                            label={field.label}
+                                            type={field.type}
+                                            value={field.value}
+                                            step={field.step}
+                                            />
+                                    )
+                                })}
+                                <div className="form-group">
+                                    <div className="col-md-12 col-sx-12">
+                                        <input name="set_trigger" type="submit" className="btn btn-default"  value="Submit"/>
+                                    </div>
                                 </div>
-                            </div>
-                        </form>
+                            </form>
+                        </div>
                     </div>
                     <div className="col-md-4 col-sm-3 hidden-xs">
                     </div>
@@ -280,7 +320,6 @@ var App = React.createClass({
                 <div className="row">
                     <FooterComponent />
                 </div>
-
             </div>
 
         );
